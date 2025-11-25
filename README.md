@@ -159,14 +159,14 @@ AI_DOCUMENT-AUTHORING_REFINED_VERSION/
 
 ## ⚙️ Technologies Used
 
-| Layer           | Technologies             |
-| --------------- | ------------------------ |
-| Frontend        | HTML, CSS, JavaScript    |
-| Backend         | FastAPI (Python)         |
-| AI Model        | Google Gemini            |
-| Database        | SQLite + SQLAlchemy      |
-| Auth            | JWT                      |
-| Document Export | python-docx, python-pptx |
+| Layer                    | Technologies             |
+| -------------------------| ------------------------ |
+| Frontend                 | HTML, CSS, JavaScript    |
+| Backend                  | FastAPI (Python)         |
+| AI/LLM                   | Google Gemini            |
+| Database                 | SQLite + SQLAlchemy      |
+| Authentication           | JWT                      |
+| Document Export          | python-docx, python-pptx |
 
 ---
 
@@ -243,6 +243,6 @@ JWT_SECRET_KEY=your_secret_key_here
 
 **Name:** Pravallika Chekuri
 **Domain:** AI, Backend Development, Automation
-**Technologies:** Python, FastAPI, AI / ML, SQLite
+**Technologies:** Python, FastAPI,LLMs, AI / ML, SQLite
 
 ---
