@@ -52,13 +52,17 @@ Users can enter custom prompts to refine AI generated content
 
 Every refinement is stored in the database with:
 
+Id
+
+Content_section_id
+
 Old content
 
 New content
 
 User prompt
 
-Timestamp
+Created at (Timestamp)
 
 ✅ Feedback & Comments
 
@@ -88,11 +92,9 @@ Users
 
 Projects
 
-Section content
+Content Sections
 
-Refinements
-
-Feedback
+Refinement History - includes feedback and comments as well
 
 Export history
 
@@ -105,32 +107,64 @@ Frontend (HTML/CSS/JS)
         ↓
 Google Gemini AI + SQLite Database
 
+Project structure:
 
-Backend structure:
+AI_DOCUMENT-AUTHORING_REFINED_VERSION/
+│
+├── backend/
+│   │
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── auth.py                # JWT authentication logic
+│   │   ├── crud.py                # Database CRUD operations
+│   │   ├── database.py            # SQLAlchemy DB connection
+│   │   ├── llm.py                 # Google Gemini AI integration
+│   │   ├── main.py                # FastAPI application & API routes
+│   │   ├── models.py              # ORM database models
+│   │   ├── schemas.py             # Pydantic request/response schemas
+│   │   │
+│   │   └── utils/
+│   │       ├── __init__.py
+│   │       ├── export_docx.py     # Word export logic
+│   │       └── export_pptx.py     # PowerPoint export logic
+│   │
+│   ├── data/
+│   │   └── ai_docs.db             # SQLite database file
+│   │
+│   ├── init_db.py                 # DB initialization
+│   ├── test_server.py             # Used for server testing
+│   ├── sanity_test.py             # Optional testing script
+│   ├── setup.py                    # Setup / packaging
+│   ├── requirements.txt           # Backend dependencies
+│   └── .env                       # Environment variables
+│
+├── frontend/
+│   │
+│   ├── assets/
+│   │   └── (icons/images etc.)
+│   │
+│   ├── css/
+│   │   └── style.css              # All UI styles
+│   │
+│   ├── js/
+│   │   ├── api.js                 # API request handler
+│   │   ├── auth.js                # Login & Register logic
+│   │   ├── dashboard.js           # Project dashboard logic
+│   │   ├── project-editor.js      # Editor + refinement logic
+│   │   └── project-wizard.js      # Project creation wizard
+│   │
+│   ├── index.html                 # Entry page
+│   ├── login.html                 # Login UI
+│   ├── register.html              # Register UI
+│   ├── dashboard.html             # Projects page
+│   ├── project-wizard.html        # Create project UI
+│   ├── project-editor.html        # Main editor UI
+│   └── README.md                  # Frontend instructions
+│
+├── jwt-generation_code.py         # Token generation helper
+├── .env                            # Global env
+└── README.md                       # Main project documentation
 
-app/
-├── auth.py
-├── database.py
-├── models.py
-├── schemas.py
-├── llm.py
-├── main.py
-├── utils/
-│   ├── export_docx.py
-│   └── export_pptx.py
-
-
-Frontend structure:
-
-frontend/
-├── login.html
-├── register.html
-├── dashboard.html
-├── editor.html
-├── js/
-│   ├── api.js
-│   ├── auth.js
-│   └── dashboard.js
 
 ⚙️ Technologies Used
 Layer	Technologies
@@ -202,6 +236,6 @@ Export as Word/PPT
 
 👩‍💻 Author
 
-Name: [Your Name]
+Name: Pravallika Chekuri
 Domain: AI, Backend Development, Automation
-Technologies: Python, FastAPI, AI / ML, SQL, Cloud
+Technologies: Python, FastAPI, AI / ML, SQLite
