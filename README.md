@@ -32,7 +32,7 @@ All data is stored in a relational database (**SQLite + SQLAlchemy**) to ensure 
 
 ### ✅ AI Content Generation
 
-Each section is generated using **Google Gemini AI**
+Each section is either can be created by user or is generated using **Google Gemini AI**
 Content is created based on:
 
 * Topic
