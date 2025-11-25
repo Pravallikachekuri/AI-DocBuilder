@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Editor - AI Doc Platform</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #0f172a, #020617);
+            color: #e5e7eb;
+            overflow: hidden;
+            /* full-screen app, no double scrollbar */
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ========== LAYOUT ========== */
+
+        .editor-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            margin: 0;
+            padding: 12px 18px 18px;
+
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+
+            background: rgba(15, 23, 42, 0.96);
+        }
+
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            background: rgba(15, 23, 42, 0.98);
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.9);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-left h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .editor-main {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: 270px minmax(0, 1fr);
+            gap: 14px;
+            width: 100%;
+        }
+
+        /* ========== BUTTONS ========== */
+
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease, border-color 0.1s ease, color 0.1s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ecfdf5;
+            box-shadow: 0 10px 24px rgba(22, 163, 74, 0.55);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 30px rgba(22, 163, 74, 0.75);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #eff6ff;
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.55);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 32px rgba(37, 99, 235, 0.75);
+        }
+
+        .btn-outline {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            color: #e5e7eb;
+        }
+
+        .btn-outline:hover {
+            background: rgba(15, 23, 42, 0.85);
+        }
+
+        .btn-text {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            padding-inline: 4px;
+        }
+
+        .btn-text:hover {
+            color: #e5e7eb;
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .btn-feedback {
+            border-radius: 999px;
+            padding-inline: 10px;
+            border: 1px solid transparent;
+        }
+
+        .btn-feedback:hover {
+            border-color: rgba(148, 163, 184, 0.6);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        /* ========== SIDEBAR ========== */
+
+        .editor-sidebar {
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.98));
+            padding: 12px 10px 10px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding-inline: 4px;
+        }
+
+        .sidebar-header h3 {
+            font-size: 0.98rem;
+            font-weight: 600;
+        }
+
+        .document-info {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .badge-secondary {
+            border-style: dashed;
+            opacity: 0.85;
+        }
+
+        .sections-list {
+            margin-top: 4px;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.9rem;
+            scrollbar-width: thin;
+        }
+
+        .section-list-item {
+            border-radius: 12px;
+            padding: 8px 9px;
+            background: rgba(15, 23, 42, 0.94);
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            cursor: pointer;
+            transition: background 0.1s ease, border-color 0.1s ease, transform 0.08s ease;
+        }
+
+        .section-list-item:hover {
+            background: rgba(15, 23, 42, 1);
+            border-color: #38bdf8;
+            transform: translateY(-1px);
+        }
+
+        .section-list-item.active {
+            border-color: #22c55e;
+            background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.25), rgba(15, 23, 42, 0.98));
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.9);
+        }
+
+        .section-list-item strong {
+            display: block;
+            font-size: 0.87rem;
+            line-height: 1.4;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        /* ========== MAIN CONTENT ========== */
+
+        .editor-content {
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            background: rgba(15, 23, 42, 0.98);
+            padding: 12px 14px 10px;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .empty-state {
+            margin: auto;
+            text-align: center;
+            max-width: 360px;
+            padding: 20px 16px;
+            border-radius: 16px;
+            border: 1px dashed rgba(148, 163, 184, 0.6);
+            background: rgba(15, 23, 42, 0.96);
+        }
+
+        .empty-icon {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+
+        .section-editor {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+            align-items: stretch;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding-inline: 2px;
+        }
+
+        .section-header h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .content-display {
+            margin-top: 2px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background: rgba(15, 23, 42, 0.98);
+            padding: 10px 12px 11px;
+            display: flex;
+            flex-direction: column;
+            min-height: 220px;
+            max-height: calc(100vh - 260px);
+            width: 100%;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .content-header h3 {
+            font-size: 0.95rem;
+        }
+
+        .content-text {
+            flex: 1;
+            min-height: 0;
+            margin-top: 4px;
+            padding: 12px 12px;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.96);
+            color: #ffffff;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            scrollbar-width: thin;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* ========== REFINEMENT PANEL ========== */
+
+        .refinement-controls {
+            margin-top: 8px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.18), rgba(15, 23, 42, 0.98));
+            padding: 10px 11px 11px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.3fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        .refinement-controls h3 {
+            grid-column: 1 / -1;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .refinement-form .form-group {
+            margin-bottom: 6px;
+        }
+
+        .refinement-form label {
+            display: block;
+            font-size: 0.83rem;
+            margin-bottom: 4px;
+        }
+
+        .refinement-form textarea {
+            width: 100%;
+            min-height: 70px;
+            resize: vertical;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: rgba(15, 23, 42, 0.95);
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            padding: 7px 9px;
+            outline: none;
+        }
+
+        .refinement-form textarea:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+        }
+
+        .feedback-controls h4 {
+            font-size: 0.86rem;
+            margin-bottom: 4px;
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .comment-box textarea {
+            width: 100%;
+            min-height: 50px;
+            resize: vertical;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: rgba(15, 23, 42, 0.95);
+            color: #e5e7eb;
+            font-size: 0.88rem;
+            padding: 6px 8px;
+            outline: none;
+            margin-bottom: 4px;
+        }
+
+        .comment-box textarea:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35);
+        }
+
+        /* ========== HISTORY ========== */
+
+        .refinement-history {
+            margin-top: 8px;
+            border-radius: 14px;
+            border: 1px dashed rgba(148, 163, 184, 0.6);
+            padding: 9px 10px 9px;
+            max-height: 180px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            background: rgba(15, 23, 42, 0.98);
+            scrollbar-width: thin;
+            width: 100%;
+        }
+
+        .refinement-history h4 {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .history-item {
+            padding: 6px 7px;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            margin-bottom: 4px;
+        }
+
+        .history-item .prompt {
+            margin-bottom: 2px;
+        }
+
+        .history-item .timestamp {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* ========== LOADING OVERLAY ========== */
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.82);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            background: rgba(15, 23, 42, 1);
+            padding: 18px 20px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.65);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            border: 3px solid rgba(148, 163, 184, 0.4);
+            border-top-color: #38bdf8;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading-content p {
+            font-size: 0.87rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ========== RESPONSIVE ========== */
+
+        @media (max-width: 900px) {
+            .editor-main {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .editor-sidebar {
+                order: 2;
+                margin-top: 6px;
+            }
+
+            .editor-content {
+                order: 1;
+            }
+
+            .refinement-controls {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        /* ========= HARD OVERRIDE FOR GENERATED CONTENT COLOR ========= */
+
+        #sectionContent,
+        #sectionContent * {
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="editor-container">
+        <!-- Header -->
+        <header class="editor-header">
+            <div class="header-left">
+                <button id="backToDashboard" class="btn btn-text">← Back to Dashboard</button>
+                <h1 id="projectTitle">Project Title</h1>
+            </div>
+            <div class="header-actions">
+                <button id="generateContent" class="btn btn-primary">Generate Content</button>
+                <button id="exportProject" class="btn btn-success">Export Document</button>
+            </div>
+        </header>
+
+        <div class="editor-main">
+            <!-- Sidebar - Document Outline -->
+            <aside class="editor-sidebar">
+                <div class="sidebar-header">
+                    <h3>Document Outline</h3>
+                    <div class="document-info">
+                        <span id="documentTypeBadge" class="badge">DOCX</span>
+                        <span id="sectionCount" class="badge badge-secondary">0 sections</span>
+                    </div>
+                </div>
+
+                <div id="sectionsList" class="sections-list">
+                    <!-- Sections will be loaded here -->
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="editor-content">
+                <div id="noSectionSelected" class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h2>Select a section to edit</h2>
+                    <p>Choose a section from the sidebar to view and refine its content</p>
+                </div>
+
+                <div id="sectionEditor" class="section-editor hidden">
+                    <div class="section-header">
+                        <h2 id="currentSectionTitle">Section Title</h2>
+                        <div class="section-actions">
+                            <button id="regenerateSection" class="btn btn-outline">🔄 Regenerate</button>
+                        </div>
+                    </div>
+
+                    <div class="content-display">
+                        <div class="content-header">
+                            <h3>Generated Content</h3>
+                            <div class="content-actions">
+                                <button id="copyContent" class="btn btn-text">📋 Copy</button>
+                            </div>
+                        </div>
+                        <div id="sectionContent" class="content-text">
+                            <!-- Content will be displayed here -->
+                        </div>
+                    </div>
+
+                    <!-- Refinement Controls -->
+                    <div class="refinement-controls">
+                        <h3>Refine with AI</h3>
+
+                        <div class="refinement-form">
+                            <div class="form-group">
+                                <label for="refinementPrompt">Refinement Instructions</label>
+                                <textarea id="refinementPrompt"
+                                    placeholder="e.g., Make this more formal, convert to bullet points, shorten to 100 words..."
+                                    rows="3"></textarea>
+                            </div>
+                            <button id="refineContent" class="btn btn-primary">Apply Refinement</button>
+                        </div>
+
+                        <div class="feedback-controls">
+                            <h4>Quick Feedback</h4>
+                            <div class="feedback-buttons">
+                                <button id="likeBtn" class="btn btn-text btn-feedback">
+                                    👍 Like
+                                </button>
+                                <button id="dislikeBtn" class="btn btn-text btn-feedback">
+                                    👎 Dislike
+                                </button>
+                            </div>
+
+                            <div class="comment-box">
+                                <textarea id="userComment" placeholder="Add comments or notes about this section..."
+                                    rows="2"></textarea>
+                                <button id="saveComment" class="btn btn-outline">Save Comment</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Refinement History -->
+                    <div id="refinementHistory" class="refinement-history hidden">
+                        <h4>Refinement History</h4>
+                        <div id="historyList">
+                            <!-- History items will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingMessage">Processing...</p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/project-editor.js"></script>
+</body>
+
+</html>

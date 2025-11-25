@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Setup - AI Doc Platform</title>
+    <!-- keep your old CSS if you want, our styles come after and will override where needed -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Wizard-specific UI/UX styles (do NOT change any IDs) -->
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #0f172a, #020617);
+            color: #e5e7eb;
+            overflow: hidden;
+            /* full-screen wizard */
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ====== FULL-SCREEN CONTAINER ====== */
+
+        .wizard-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            margin: 0;
+            background: rgba(15, 23, 42, 0.96);
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header + steps */
+        .wizard-header {
+            padding: 18px 24px 14px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.98);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+        }
+
+        .wizard-header h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .progress-steps {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            color: #9ca3af;
+            background: rgba(15, 23, 42, 0.9);
+            position: relative;
+        }
+
+        .step.active {
+            border-color: #38bdf8;
+            color: #e0f2fe;
+            background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.28), rgba(15, 23, 42, 0.95));
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.9);
+        }
+
+        .step::after {
+            content: attr(data-step);
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            opacity: 0.75;
+        }
+
+        /* Main layout */
+        .wizard-main {
+            flex: 1;
+            min-height: 0;
+            padding: 20px 24px 22px;
+            overflow-y: auto;
+            /* scroll only main content */
+        }
+
+        .wizard-step {
+            animation: fadeIn 0.18s ease-out;
+        }
+
+        .step-content {
+            background: rgba(15, 23, 42, 0.98);
+            border-radius: 18px;
+            padding: 18px 20px 20px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+        }
+
+        .step-content h2 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+
+        .step-actions {
+            margin-top: 14px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 9px 11px;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background: rgba(15, 23, 42, 0.9);
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .form-group textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+            background: rgba(15, 23, 42, 0.98);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease, border-color 0.1s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ecfdf5;
+            box-shadow: 0 10px 25px rgba(22, 163, 74, 0.55);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 15px 32px rgba(22, 163, 74, 0.75);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            color: #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(15, 23, 42, 0.85);
+        }
+
+        .btn-outline {
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px dashed rgba(148, 163, 184, 0.7);
+            color: #e5e7eb;
+        }
+
+        .btn-outline:hover {
+            border-style: solid;
+            border-color: #38bdf8;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.8);
+        }
+
+        /* Structure step */
+        .structure-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .structure-header p {
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+
+        .sections-container {
+            border-radius: 14px;
+            border: 1px dashed rgba(148, 163, 184, 0.6);
+            background: rgba(15, 23, 42, 0.85);
+            padding: 10px 10px 8px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        #sectionsContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .section-placeholder {
+            padding: 18px 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+
+        .section-actions {
+            margin-top: 10px;
+        }
+
+        /* Review step */
+        .review-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 8px 16px;
+            margin-bottom: 14px;
+            font-size: 0.9rem;
+        }
+
+        .review-item strong {
+            color: #e5e7eb;
+        }
+
+        .review-value {
+            color: #cbd5f5;
+        }
+
+        .sections-preview {
+            margin-top: 4px;
+        }
+
+        .sections-preview h3 {
+            font-size: 0.98rem;
+            margin-bottom: 8px;
+        }
+
+        /* ✅ White card with dark text so preview is readable */
+        .sections-preview-content {
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            padding: 10px 10px 8px;
+            max-height: 260px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            background: #ffffff;
+            color: #020617;
+        }
+
+        .sections-preview-content div,
+        #sectionsPreview div,
+        #sectionsPreview p,
+        #sectionsPreview span,
+        #sectionsPreview li {
+            color: #020617;
+        }
+
+        .sections-preview h3 {
+            color: #e5e7eb;
+        }
+
+        .empty-preview {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.82);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            background: rgba(15, 23, 42, 1);
+            padding: 20px 22px;
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spinner {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            border: 3px solid rgba(148, 163, 184, 0.4);
+            border-top-color: #38bdf8;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading-content p {
+            font-size: 0.9rem;
+            color: #e5e7eb;
+        }
+
+        /* Messages */
+        .message-container {
+            position: fixed;
+            top: 18px;
+            right: 20px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message-container .message {
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .message.success {
+            background: rgba(22, 163, 74, 0.16);
+            border: 1px solid rgba(22, 163, 74, 0.7);
+            color: #bbf7d0;
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.7);
+            color: #fecaca;
+        }
+
+        /* Debug button */
+        button[onclick="debugWizard()"] {
+            font-size: 0.8rem;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .wizard-main {
+                padding-inline: 16px;
+            }
+
+            .structure-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .step::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wizard-container">
+        <header class="wizard-header">
+            <div class="header-content">
+                <h1>Project Setup</h1>
+                <div class="progress-steps">
+                    <div class="step active" data-step="1">Basic Info</div>
+                    <div class="step" data-step="2">Structure</div>
+                    <div class="step" data-step="3">Review</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="wizard-main">
+            <!-- Step 1: Basic Information -->
+            <div id="step1" class="wizard-step active">
+                <div class="step-content">
+                    <h2>Project Information</h2>
+                    <form id="basicInfoForm">
+                        <div class="form-group">
+                            <label for="wizardTitle">Project Title *</label>
+                            <input type="text" id="wizardTitle" required placeholder="e.g., Market Analysis Report">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="wizardType">Document Type *</label>
+                            <select id="wizardType" required>
+                                <option value="">Select document type</option>
+                                <option value="docx">Microsoft Word (.docx)</option>
+                                <option value="pptx">Microsoft PowerPoint (.pptx)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="wizardTopic">Main Topic/Prompt *</label>
+                            <textarea id="wizardTopic" required
+                                placeholder="Describe what you want to create..."></textarea>
+                            <small>Be specific for better AI results (e.g., "A comprehensive market analysis of the
+                                electric vehicle industry in 2025 focusing on battery technology advancements")</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="step-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="step1NextBtn">Next: Structure</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Document Structure -->
+            <div id="step2" class="wizard-step hidden">
+                <div class="step-content">
+                    <h2>Document Structure</h2>
+                    <div class="structure-header">
+                        <p id="structureDescription">Define your document sections or slides</p>
+                        <button type="button" id="suggestOutline" class="btn btn-outline">
+                            🚀 AI Suggest Outline
+                        </button>
+                    </div>
+
+                    <div class="sections-container">
+                        <div id="sectionsContainer">
+                            <!-- Sections will be added here dynamically -->
+                            <div class="section-placeholder" id="sectionPlaceholder">
+                                <p>No sections added yet. Click "Add Section" or use "AI Suggest Outline" to get
+                                    started.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-actions">
+                        <button type="button" id="addSection" class="btn btn-outline">+ Add Section</button>
+                    </div>
+                </div>
+                <div class="step-actions">
+                    <button type="button" class="btn btn-secondary" id="step2BackBtn">Back</button>
+                    <button type="button" class="btn btn-primary" id="step2NextBtn">Next: Review</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Review and Create -->
+            <div id="step3" class="wizard-step hidden">
+                <div class="step-content">
+                    <h2>Review & Create</h2>
+                    <div class="review-summary">
+                        <div class="review-item">
+                            <strong>Title:</strong> <span id="reviewTitle" class="review-value">-</span>
+                        </div>
+                        <div class="review-item">
+                            <strong>Type:</strong> <span id="reviewType" class="review-value">-</span>
+                        </div>
+                        <div class="review-item">
+                            <strong>Topic:</strong> <span id="reviewTopic" class="review-value">-</span>
+                        </div>
+                        <div class="review-item">
+                            <strong>Sections:</strong> <span id="reviewSectionCount" class="review-value">0
+                                sections</span>
+                        </div>
+                    </div>
+
+                    <div class="sections-preview">
+                        <h3>Document Structure Preview</h3>
+                        <div id="sectionsPreview" class="sections-preview-content">
+                            <div class="empty-preview">
+                                No sections defined yet
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-actions">
+                    <button type="button" class="btn btn-secondary" id="step3BackBtn">Back</button>
+                    <button type="button" class="btn btn-primary" id="createProjectBtn">Create Project</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingMessage">Creating your project...</p>
+        </div>
+    </div>
+
+    <!-- Debug button -->
+    <button onclick="debugWizard()"
+        style="position: fixed; top: 10px; right: 10px; z-index: 10000; background: #ff6b6b; color: white; border: none; padding: 10px; border-radius: 5px;">
+        🐛 Debug Wizard
+    </button>
+
+    <!-- Message Container -->
+    <div id="messageContainer" class="message-container"></div>
+
+    <script src="js/api.js?v=999"></script>
+    <script src="js/project-wizard.js?v=999"></script>
+</body>
+
+</html>
